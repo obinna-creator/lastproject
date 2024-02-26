@@ -25,7 +25,7 @@ import { handleValidationErrors, validateUserRegistration } from "../validator/v
 // import { updateUser } from "../db/users.db";
 
 export default (router: express.Router) => {
-  router.get("/users", getAllUsersController);
+  router.get("/users", getAllUsersController)
 
   router.post("/signup",validateUserRegistration,handleValidationErrors, signUp);
   router.post("/login",  signIn);
