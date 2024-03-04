@@ -7,22 +7,24 @@ generator client {
 
 datasource db {
   provider = "mysql"
-  url   = env("DATABASE_URL")
+  url      = env("DATABASE_URL")
 }
 
-
 // User model
+
 model User {
-  UserID     Int      @id @default(autoincrement())
+  UserID     Int        @id @default(autoincrement())
   Username   String?
   Password   String
-  Email      String  @unique
-  Token      String  @default("")
-  isVerified  Boolean @default(false)
+  Email      String     @unique
+  Token      String     @default("")
+  isVerified Boolean    @default(false)
   RoleID     Int
   Role       Role[]
   Clients    Client[]
-  Cases     Case[]
+  Cases      Case[]
+  Blogs      BlogPost[]
+  contacts   Contact[]
 
   @@unique([UserID])
   @@map("users")
@@ -30,10 +32,10 @@ model User {
 
 // Role model
 model Role {
-  RoleID   Int     @id @default(autoincrement())
+  RoleID   Int    @id @default(autoincrement())
   RoleName String
-  Users    User  @relation(fields: [userId], references: [UserID])
-  userId  Int
+  Users    User   @relation(fields: [userId], references: [UserID])
+  userId   Int
 
   @@unique([RoleID])
   @@map("roles")
@@ -42,19 +44,21 @@ model Role {
 // Client model
 
 model Client {
-  ClientID        Int        @id @default(autoincrement())
-  FirstName       String
-  LastName        String
-  ContactNumber   String
-  Email           String
-  Address         String
-  Gender          String
-  Case            Case?      @relation(fields: [CaseID], references: [CaseID])
-  CaseID          Int?
-  User            User       @relation( fields: [userId], references: [UserID])
-  userId  Int
-  Documents       Document[]
-  Communications  Communication[]
+  ClientID       Int             @id @default(autoincrement())
+  FirstName      String
+  LastName       String
+  ContactNumber  String
+  Email          String
+  Address        String
+  Gender         String
+  Case           Case?           @relation(fields: [CaseID], references: [CaseID])
+  CaseID         Int?
+  User           User            @relation(fields: [userId], references: [UserID])
+  userId         Int
+  Documents      Document[]
+  Communications Communication[]
+  isDeleted      Boolean         @default(false)
+  Contact        Contact[]
 
   @@unique([ClientID])
   @@map("clients")
@@ -62,11 +66,11 @@ model Client {
 
 // Case model
 model Case {
-  CaseID          Int          @id @default(autoincrement())
-  CaseName        String
-  AssignedUserID  Int
-  AssignedUser    User         @relation(fields: [AssignedUserID], references: [UserID])
-  Clients         Client[]  
+  CaseID         Int      @id @default(autoincrement())
+  CaseName       String
+  AssignedUserID Int
+  AssignedUser   User     @relation(fields: [AssignedUserID], references: [UserID])
+  Clients        Client[]
 
   @@unique([CaseID])
   @@map("cases")
@@ -77,7 +81,7 @@ model Document {
   DocumentID   Int      @id @default(autoincrement())
   DocumentName String
   FilePath     String
-  Content      Bytes 
+  Content      Bytes
   UploadDate   DateTime @default(now())
   ClientID     Int
   Client       Client   @relation(fields: [ClientID], references: [ClientID])
@@ -86,24 +90,43 @@ model Document {
   @@map("document")
 }
 
+model BlogPost {
+  BlogID   Int      @id @default(autoincrement())
+  BlogPost String
+  FilePath String
+  Upload   DateTime @default(now())
+  User     User     @relation(fields: [UserID], references: [UserID])
+  UserID   Int
 
-
-
- 
-// Communication model
-
-
-
+  @@unique([BlogID])
+  @@map("blogpost")
+}
 
 model Communication {
-  CommunicationID  Int      @id @default(autoincrement())
+  CommunicationID   Int      @id @default(autoincrement())
   CommunicationType String
   CommunicationDate DateTime @default(now())
-  Description      String
-  ClientID         Int
-  Client           Client   @relation(fields: [ClientID], references: [ClientID])
+  Description       String
+  ClientID          Int
+  Client            Client   @relation(fields: [ClientID], references: [ClientID])
 
   @@unique([CommunicationID])
   @@map("communication")
 }
 
+
+model Contact {
+  ContactID   Int    @id @default(autoincrement())
+  Name        String
+  Email       String
+  PhoneNumber String
+  Description String
+  ClientID    Int
+  Client      Client @relation(fields: [ClientID], references: [ClientID])
+  User        User?  @relation(fields: [userUserID], references: [UserID])
+  userUserID  Int?
+
+  @@unique([ContactID])
+  @@map("contact")
+  
+}

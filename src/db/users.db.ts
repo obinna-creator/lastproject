@@ -1,4 +1,8 @@
-import { PrismaClient } from "@prisma/client";
+import { Client, BlogPost,Contact,User,PrismaClient } from "@prisma/client";
+  import { Request, Response } from 'express';
+import multer from 'multer';
+import path from 'path';
+
 import { hashSync, compareSync } from "bcrypt";
 import { sign, verify } from "jsonwebtoken";
 import dotenv from "dotenv";
@@ -175,8 +179,27 @@ export const destroyToken = async (id: number) => {
 
 
 // for client
-export const getAllClients = ()=>prisma.client.findMany()
 
+// export const getAllClients = async (userId:number) => {
+//     try {
+//         const clients = await prisma.client.findMany();
+//         return clients;
+//     } catch (error:any) {
+//         throw new Error(`Error fetching all clients: ${error.message}`);
+//     }
+// };
+
+
+export const getAllClients= (userId: number) => prisma.client.findMany({
+  where: {
+    userId: userId,
+  },
+});
+export const getOneClient = (clientId: number) => prisma.client.findUnique({
+  where: {
+    ClientID:clientId
+  }
+})
 //get client by Firstname
 export const getClientByFirstname = async (firstname: string) => {
   try {
@@ -277,3 +300,181 @@ return newClient
   }
 }
 
+
+// export const deleteAllClients = async (): Promise <Client[]>  => {
+//   try {
+//     // Mark all clients as deleted
+//    const deleteall= await prisma.client.updateMany({
+//       data: {
+//         isDeleted: true,
+//       },
+//     });
+//     const updatedClients = deleteall.count > 0 ? deleteall.count : []
+    
+//     return updatedClients;
+   
+    // Respond 
+    
+export const deleteClientById = async (clientId:number) => {
+  try {
+      // Extract clientId from URL params
+
+    // Delete client by ID
+   const deleteOne= await prisma.client.delete({
+      where: {
+        ClientID: clientId,
+      },
+    });
+
+    // Respond with success message
+    return deleteOne
+  } catch (error:any) {
+    
+     throw new Error(error)
+  }
+};
+
+export const geteverydeletedclient = async (): Promise <Client[]> => {
+  try {
+    // Retrieve all deleted clients
+    const deletedClients = await prisma.client.findMany({
+      where: {
+        isDeleted: true,
+      },
+    });
+   return deletedClients
+  }catch(error:any){
+    throw new Error(error)
+  }
+}
+  
+
+export const getDeletedClientById = async ( clientId:number) => {
+  
+try {
+   // Extract clientId from URL params
+
+    // Retrieve deleted client by ID
+    const deletedClient = await prisma.client.findFirst({
+      where: {
+        ClientID: clientId,
+        isDeleted: true,
+      },
+    });
+  return deletedClient
+}catch (error:any) {
+ throw new Error(error)
+}
+
+}
+
+//export const CreateBlogPost= async()
+
+
+const storage = multer.diskStorage({
+  destination: function (req, file, cb){
+    cb(null, 'uploads/');
+  },
+  filename: function (req, file, cb) {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+    cb(null, uniqueSuffix + path.extname(file.originalname));
+  },
+});
+
+const upload = multer({ storage:storage }).single('file');
+
+//const upload = multer({ storage, limits: { fileSize: 1024 * 1024 * 5 } }); // 5 MB limit
+
+export const uploadBlogPost = async (req: Request, res: Response) => {
+  upload(req, res, async (err: any) => {
+    if (err) {
+      return res.status(500).json({ error: 'Failed to upload file.' });
+    }
+    
+    try {
+      const { BlogPost } = req.body;
+     const { UserID } = req.params
+      const file: Express.Multer.File | undefined = req.file ;
+      
+      if (!BlogPost || !UserID || !file) {
+        return res.status(400).json({ error: 'Missing required fields.' });
+      }
+      const userID = parseInt(UserID, 10);
+
+       
+      if (isNaN(userID) || userID <= 0) {
+        return res.status(400).json({ error: 'Invalid UserID type: must be a number.' });
+      }
+      //  if  (typeof UserID !== 'number') {
+      //           return res.status(400).json({ error: 'Invalid UserID type: must be a number.' });
+      //       }
+     
+      console.log('Received UserID:', userID);
+      
+            // const user = await prisma.user.findUnique({
+            //     where: { UserID:userID },
+            // });
+
+            // if (!user) {
+            //     return res.status(400).json({ error: 'Invalid UserID: User does not exist.' });
+            // }
+
+
+      // Save file path to database
+      const filePath = file ? file.path : null;
+
+      // Create BlogPost record in the database
+      const newBlogPost = await prisma.blogPost.create({
+        data: {
+          BlogPost,
+          FilePath: filePath || '',
+          
+          User: { connect: { UserID:userID } }, // Connect BlogPost to User
+        },
+         include: { User: true },
+      });
+
+   return res.status(201).json({
+        status: true,
+        message:"created",
+        newBlogPost,
+       
+      });
+    } catch (error:any) {
+      return res.status(500).json({ 
+        message:error.message
+      });
+    }
+  });
+};
+
+
+
+
+
+// interfaces/customRequest.ts
+
+
+//export const deleteClientById = async (clientId:number)
+
+export const createContact = async (
+  name: string,
+  email: string,
+  phoneNumber: string,
+  description: string,
+  clientId: number,
+  userId: number
+): Promise<Contact> => {
+  return prisma.contact.create({
+    data: {
+      Name: name,
+      Email: email,
+      PhoneNumber: phoneNumber,
+      Description: description,
+      Client: { connect: { ClientID: clientId } },
+      User: { connect: { UserID: userId } }
+    }
+  });
+};
+
+export  default createContact

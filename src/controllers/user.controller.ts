@@ -19,6 +19,14 @@ import {
   destroyToken,
   createClientManually,
   createClientBatchUpload,
+  getAllClients,
+  getClientByLastname,
+  getClientByFirstname,
+  
+  deleteClientById ,
+getDeletedClientById,
+geteverydeletedclient ,
+uploadBlogPost
   
 } from "../db/users.db";
 import * as jwt from "jsonwebtoken";
@@ -81,7 +89,7 @@ export const signUp = async (req: Request, res: Response) => {
 
 //verify email function
 
-export const verifyEmail= async (req: Request, res: Response) => {
+export const verifyEmail = async (req: Request, res: Response) => {
   try {
     const userId = parseInt(req.params.UserID, 10);
     const token = req.params.Token;
@@ -224,7 +232,7 @@ export const resetPassword = async(req:Request, res:Response)=>{
   await updateUserPassword(userId, newPassword)
    const hashedPassword = hashSync(newPassword, 10);
 
-  return res.status(200).json({message:"your password has been reset successfully",hashedPassword })
+  return res.status(200).json({message:"your password has been reset successfully", })
   } catch (error) {
     res.status(500).json({error:"failed to reset password"} )
   }
@@ -386,9 +394,9 @@ export const ClientBatchUpload = async (req: Request, res: Response) => {
 
 //get all clients
 
-export const createClientController = async (req: Request, res: Response) => {
+export const createClient = async (req: Request, res: Response) => {
   try {
-    const userId = parseInt(req.params.UserID); // Extract userId from URL params
+    const userId = parseInt(req.params.UserID,10); // Extract userId from URL params
 
     // Get the authenticated user
     const authenticatedUser = await getUserById(userId);
@@ -416,3 +424,146 @@ export const createClientController = async (req: Request, res: Response) => {
     res.status(500).send('Internal server error');
   }
 };
+
+export const getAlltheClients = async( req:Request,res:Response)=>{
+  try {
+    const userId = parseInt(req.params.UserID)
+    const user= await getUserById(userId)
+    if (!user) {
+       res.status(403).json("forbidden")
+     }
+
+    const getClients = await getAllClients(userId)
+    if (!getClients) {
+      return res.status(401).json({
+        status: false,
+        message:"No clients found"
+     })
+    } 
+    return res.status(200).json({
+      status:true,
+      data:getClients
+    })
+  } catch(error:any){
+   return res.status(500).json({
+      status:false,
+      message:error.message
+    })
+  }
+    
+  }
+  
+
+
+export const getclientbylastname = async(req:Request, res:Response)=>{
+  try {
+    const {lastname}= req.body
+    const getlastname= await getClientByLastname(lastname)
+    res.status(200).json({
+      message: `this is client lastname ${lastname}`,
+      getlastname
+    })
+
+
+  } catch (error:any) {
+    res.status(500).json({
+      message:error.message
+    })
+  }
+
+}
+
+export const getclientbyfirstname = async (req: Request, res: Response) => {
+  try {
+    
+    const { firstname } = req.body
+    const getfirstname = await getClientByFirstname(firstname)
+    res.status(200).json({
+      message: ` this is client firstname ${firstname}`,
+      getfirstname
+    })
+ 
+  } catch (error: any) {
+    res.status(500).json(error.message)
+  }
+}
+
+// export const deleteAllClient = async(req:Request, res:Response)=>{
+//   try {
+//     const  deleteall = await deleteAllClients()
+
+//     res.status(200).json({
+//       message:"all client deleted successfuly",
+//       deleteall
+//     })
+//   } catch (error:any) {
+//     res.status(500).json({
+//       message:error.message
+//     })
+//   }
+// }
+
+export const deleteOneclient = async(req:Request,res:Response)=>{
+  try {
+    const clientId= parseInt(req.params.clientId)
+ 
+  const deleteoneclient= await deleteClientById(clientId)
+  res.status(200).json({
+    message:`this is the deleted client ${deleteoneclient}`
+  }) 
+
+
+  } catch (error:any) {
+     res.status(500).json({
+      message:error.message
+     })
+  }
+}
+
+
+export const getOnedeletedclient= async(req:Request, res:Response)=>{
+  try {
+    const RetrievId= parseInt(req.params.clientId)
+    const Retrieveoneclient= await getDeletedClientById(RetrievId)
+    res.status(200).json({
+      message:`client ${Retrieveoneclient} sucessfully`
+    })
+  } catch (error:any) {
+    res.status(500).json({
+      message:error.message
+    })
+  }
+}
+
+
+export const getAllthedeletedclient  = async (req: Request, res: Response) => {
+  try {
+    const deletedClients = await geteverydeletedclient (); // No need to pass req and res here
+
+    res.status(200).json(deletedClients);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Failed to retrieve deleted clients" });
+  }
+};
+
+
+
+
+
+
+// Handle upload request
+
+export const blogposthandleUpload = async (req: Request, res: Response, ) => {
+  try {
+    
+  await uploadBlogPost(req, res);
+  
+  } catch (error) {
+    console.error('Error handling upload:', error);
+    res.status(500).send('Internal server error');
+  }
+};
+
+
+

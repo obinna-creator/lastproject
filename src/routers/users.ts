@@ -16,12 +16,24 @@ import {
   signOut,
   ClientBatchUpload,
   downloadTemplateController,
+  createClient ,
+   getAlltheClients,
+  getclientbylastname,
+  getclientbyfirstname,
+  //deleteAllClient,
+  deleteOneclient ,
+  getOnedeletedclient,
+  blogposthandleUpload,
+ 
+
 
 
 } from "../controllers/user.controller";
 
 import { handleValidationErrors, validateUserRegistration } from "../validator/validator";
-
+import{submitContactForm}  from "../controllers/contact.user"
+//import {createAndScheduleAppointment} from "../controllers/user.appointment"
+  //import{getAlltheDeletedClients} from "../db/users.db"
 // import { updateUser } from "../db/users.db";
 
 export default (router: express.Router) => {
@@ -35,4 +47,15 @@ export default (router: express.Router) => {
   router.get("/signout/:UserID/:Token", signOut)
   router.get("/download-template/:UserID", downloadTemplateController),
   router.post("/upload-Template/:UserID/:AssignedUserID",upload.single("file"),ClientBatchUpload )
-  };
+  // router.post("/appointment",createAndScheduleAppointment)
+  router.post("/createNewClient/:UserID",createClient )
+  router.get("/get_allclient/:UserID",getAlltheClients)
+  router.get("/get_client_by_lastname",getclientbylastname)
+  router.get("/get_client_by_firtsname", getclientbyfirstname )
+ //router.delete("/delete_all_client",deleteAllClient)
+  router.delete("/delete_One_Client",  deleteOneclient )
+  router.get("/retrieve_one_deleted_client", getOnedeletedclient)
+ router.get("/retrieve_all_deleted_client",  getAlltheClients )
+  router.post("/blog_post/:UserID", blogposthandleUpload)
+  router.post("/contact/:UserID/:ClientID",submitContactForm)
+  }
