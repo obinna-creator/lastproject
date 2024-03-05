@@ -10,7 +10,12 @@ app.use(express.urlencoded({ extended: true }));
 const port: number = 3000;
 
 app.use("/api_v1/", routers());
-
+app.get("/", (req, res) => {
+  res.status(200).json({
+    success: true,
+    message:'API is running on'
+  })
+})
 app.listen(port, () => {
   console.log(`Server listening on port ${port}`);
 });
