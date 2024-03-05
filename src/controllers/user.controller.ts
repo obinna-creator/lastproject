@@ -20,6 +20,7 @@ import {
   createClientManually,
   createClientBatchUpload,
   getAllClients,
+  getOneClient,
   getClientByLastname,
   getClientByFirstname,
   
@@ -34,6 +35,7 @@ import * as jwt from "jsonwebtoken";
 import { hashSync, compareSync } from "bcrypt";
 
 import { sendEmail } from "../middleware/nodemailer";
+import { error } from "console";
 
 
 
@@ -425,6 +427,35 @@ export const createClient = async (req: Request, res: Response) => {
   }
 };
 
+export const get_One_Client = async (req: Request, res: Response) => {
+  try {
+    
+    const clientIds = parseInt(req.params.ClientID)
+    const client = await getOneClient(clientIds)
+    const getyourClient= (clientId: number) => prisma.client.findUnique({
+  where: {
+    ClientID:clientId
+  }
+})
+    if (!client) {
+      res.status(404).json({
+        status: false,
+        message:error.name 
+
+          })
+        }
+        res.status(200).json({
+          status: true,
+          message: `gotten retrieved successfully`,
+          client:client
+        })
+  } catch (error:any) {
+    res.status(500).json({
+      message:error.message
+    })
+  }
+}
+     
 export const getAlltheClients = async( req:Request,res:Response)=>{
   try {
     const userId = parseInt(req.params.UserID)
@@ -505,11 +536,17 @@ export const getclientbyfirstname = async (req: Request, res: Response) => {
 
 export const deleteOneclient = async(req:Request,res:Response)=>{
   try {
-    const clientId= parseInt(req.params.clientId)
- 
-  const deleteoneclient= await deleteClientById(clientId)
+    
+    const clientId = parseInt(req.params.ClientID)
+    //check if the client exists in the database
+       const client= await getOneClient(clientId)
+       if (!client) {
+        return res.status(404).json({ message: "Client not found" });
+       }
+    const deletedClient= await deleteClientById(clientId)
   res.status(200).json({
-    message:`this is the deleted client ${deleteoneclient}`
+    message: `this is the deleted client `,
+    deletedClient
   }) 
 
 

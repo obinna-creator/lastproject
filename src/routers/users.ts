@@ -16,12 +16,14 @@ import {
   signOut,
   ClientBatchUpload,
   downloadTemplateController,
-  createClient ,
+  createClient,
+  get_One_Client,
    getAlltheClients,
   getclientbylastname,
   getclientbyfirstname,
   //deleteAllClient,
-  deleteOneclient ,
+  deleteOneclient,
+  getAllthedeletedclient,
   getOnedeletedclient,
   blogposthandleUpload,
  
@@ -49,13 +51,14 @@ export default (router: express.Router) => {
   router.post("/upload-Template/:UserID/:AssignedUserID",upload.single("file"),ClientBatchUpload )
   // router.post("/appointment",createAndScheduleAppointment)
   router.post("/createNewClient/:UserID",createClient )
-  router.get("/get_allclient/:UserID",getAlltheClients)
+  router.get("/get_allclient/",getAlltheClients)
+   router.get("/get_One_Client/:ClientID",get_One_Client)
   router.get("/get_client_by_lastname",getclientbylastname)
   router.get("/get_client_by_firtsname", getclientbyfirstname )
  //router.delete("/delete_all_client",deleteAllClient)
-  router.delete("/delete_One_Client",  deleteOneclient )
-  router.get("/retrieve_one_deleted_client", getOnedeletedclient)
- router.get("/retrieve_all_deleted_client",  getAlltheClients )
+  router.delete("/delete_One_Client/:ClientID",  deleteOneclient )
+  router.get("/retrieve_one_deleted_client/:ClientID", getOnedeletedclient)
+ router.get("/retrieve_all_deleted_client",  getAllthedeletedclient )
   router.post("/blog_post/:UserID", blogposthandleUpload)
   router.post("/contact/:UserID/:ClientID",submitContactForm)
   }

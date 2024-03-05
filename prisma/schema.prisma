@@ -50,7 +50,7 @@ model Client {
   ContactNumber  String
   Email          String
   Address        String
-  Gender         String
+  Gender         String 
   Case           Case?           @relation(fields: [CaseID], references: [CaseID])
   CaseID         Int?
   User           User            @relation(fields: [userId], references: [UserID])

@@ -195,6 +195,7 @@ export const getAllClients= (userId: number) => prisma.client.findMany({
     userId: userId,
   },
 });
+
 export const getOneClient = (clientId: number) => prisma.client.findUnique({
   where: {
     ClientID:clientId
@@ -317,17 +318,22 @@ return newClient
     
 export const deleteClientById = async (clientId:number) => {
   try {
-      // Extract clientId from URL params
-
+    //Extract clientId from URL params
+    
+    
     // Delete client by ID
-   const deleteOne= await prisma.client.delete({
+   const deleteOneClient= await prisma.client.updateMany({
       where: {
         ClientID: clientId,
-      },
+     },
+     data: {
+       isDeleted: true
+    
+     }
     });
 
     // Respond with success message
-    return deleteOne
+    return deleteOneClient
   } catch (error:any) {
     
      throw new Error(error)
@@ -355,7 +361,7 @@ try {
    // Extract clientId from URL params
 
     // Retrieve deleted client by ID
-    const deletedClient = await prisma.client.findFirst({
+    const deletedClient = await prisma.client.findUnique({
       where: {
         ClientID: clientId,
         isDeleted: true,
